@@ -1,0 +1,18 @@
+export const UTM_LABS = [
+  'Advanced Electronics Lab P19a-03-02-00',
+  'Advanced Power Lab P07-114',
+  'Applied Control Lab P08-414',
+  'Basic Microwave Lab P03-416',
+  'Basic Power Lab P07-108',
+  'Bioelectronics Lab P04-213',
+  'Digital Communication Lab / IOT Lab P03-516',
+  'Instrumentation Lab P02-419',
+  'Mechatronics Lab P19A-02-02-01',
+  'Microelectronics Lab P19a-03-02-00',
+  'Microprocessor Lab P04-420',
+  'Optical Communication Lab P03-313',
+  'Power Electronics Lab P07-222',
+  'Basic Machine Lab P06-136-04',
+  'VLSI - FPGA P04-315',
+  'VLSI Design Lab / Synopsys P19A-02-10-01',
+]

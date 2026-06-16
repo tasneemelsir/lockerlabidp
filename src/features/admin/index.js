@@ -1,0 +1,8 @@
+export { default as AdminDashboard } from './pages/AdminDashboard'
+export { default as ManageComponents } from './pages/ManageComponents'
+export { default as ManageLockers } from './pages/ManageLockers'
+export { default as ManageRequests } from './pages/ManageRequests'
+export { default as ManageOverdues } from './pages/ManageOverdues'
+export { default as ManageNewItemRequests } from './pages/ManageNewItemRequests'
+export { default as ManageStudents } from './pages/ManageStudents'
+export { useAdminStats } from './hooks/useAdminStats'
