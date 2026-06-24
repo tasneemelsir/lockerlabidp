@@ -58,7 +58,7 @@ function RequestCard({ request, onQRClick, onReturnClick }) {
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex-1 min-w-0">
           {hasItems ? (
-            <h3 className="font-semibold text-slate-800 leading-snug">
+            <h3 className="font-semibold text-slate-800 lead    ing-snug">
               {items.length} Component{items.length !== 1 ? 's' : ''} Request
             </h3>
           ) : (

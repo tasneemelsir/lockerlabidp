@@ -1,48 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/shared/lib/supabase'
-import { getDaysLeft, isOverdue, getBorrowDeadline } from '@/shared/utils/dates'
-
-async function runBackgroundChecks(loans) {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    for (const loan of loans) {
-      const dueDate = loan.due_date ?? (loan.approved_at ? getBorrowDeadline(loan.approved_at) : null)
-      if (!dueDate) continue
-
-      const items = loan.borrow_request_items ?? []
-      const componentName = items.length > 0
-        ? items.map(i => i.components?.name).filter(Boolean).join(', ')
-        : loan.components?.name ?? 'an item'
-
-      if (!loan.notified_2days && getDaysLeft(dueDate) <= 2 && !isOverdue(dueDate)) {
-        const daysLeft = getDaysLeft(dueDate)
-        await supabase.from('notifications').insert({
-          user_id: user.id,
-          title:   'Return Reminder',
-          message: `Your loan of "${componentName}" is due in ${daysLeft} day(s). Please return it on time.`,
-          is_read: false,
-        })
-        await supabase.from('borrow_requests').update({ notified_2days: true }).eq('id', loan.id)
-      }
-
-      if (isOverdue(dueDate) && loan.status !== 'overdue') {
-        await supabase.from('borrow_requests').update({ status: 'overdue' }).eq('id', loan.id)
-        await supabase.from('profiles').update({ is_flagged: true }).eq('id', user.id)
-        await supabase.from('penalties').insert({ borrow_request_id: loan.id, student_id: user.id })
-        await supabase.from('notifications').insert({
-          user_id: user.id,
-          title:   'Overdue Item',
-          message: `Your loan of "${componentName}" is overdue. Please return it immediately or contact the lab assistant.`,
-          is_read: false,
-        })
-      }
-    }
-  } catch (err) {
-    console.error('[useStudentDashboard] Background check error:', err)
-  }
-}
 
 export function useStudentDashboard() {
   const [activeLoans,  setActiveLoans]  = useState([])
@@ -99,7 +56,10 @@ export function useStudentDashboard() {
         returnedCount: all.filter(r => r.status === 'returned').length,
       })
 
-      runBackgroundChecks([...active, ...overdue])
+      // Overdue detection and due-soon reminders are now handled server-side
+      // by process_overdue_loans() and process_due_reminders() (run hourly via
+      // pg_cron, or on-demand via the admin "Check Overdues Now" button).
+      // No client-side background checks needed here anymore.
     } catch (err) {
       console.error('[useStudentDashboard] Unexpected error:', err)
       setError(err.message)

@@ -4,6 +4,7 @@ import { supabase } from '@/shared/lib/supabase'
 export function useManageOverdues() {
   const [overdues, setOverdues] = useState([])
   const [loading, setLoading] = useState(true)
+  const [checking, setChecking] = useState(false)   // NEW
 
   const refetch = useCallback(async () => {
     setLoading(true)
@@ -17,6 +18,18 @@ export function useManageOverdues() {
   }, [])
 
   useEffect(() => { refetch() }, [refetch])
+
+  // NEW — calls the SQL function, then refreshes the list
+  const runOverdueCheck = useCallback(async () => {
+    setChecking(true)
+    try {
+      const { error } = await supabase.rpc('process_overdue_loans')
+      if (error) throw error
+      await refetch()
+    } finally {
+      setChecking(false)
+    }
+  }, [refetch])
 
   const addPenaltyNote = useCallback(async (penaltyId, adminNote) => {
     const { error } = await supabase
@@ -54,5 +67,5 @@ export function useManageOverdues() {
     await refetch()
   }, [refetch])
 
-  return { overdues, loading, refetch, addPenaltyNote, resolvePenalty }
+  return { overdues, loading, checking, refetch, runOverdueCheck, addPenaltyNote, resolvePenalty }
 }

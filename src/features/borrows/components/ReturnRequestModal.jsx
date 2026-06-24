@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import QRCode from 'qrcode'
 import toast from 'react-hot-toast'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
+import { Capacitor } from '@capacitor/core'
+import { App } from '@capacitor/app'
 import { Modal } from '@/shared/components/ui/Modal'
 import { Button } from '@/shared/components/ui/Button'
 import { initReturnRequest, pollQrScanned, submitReturnProof } from '../hooks/useBorrows'
@@ -26,6 +29,11 @@ export function ReturnRequestModal({ isOpen, onClose, request, onSuccess }) {
   const canvasRef          = useRef(null)
   const isMountedRef       = useRef(true)
   const fileInputRef       = useRef(null)
+  // Keeps the latest step available inside the native back-button listener
+  // without forcing the listener to re-register on every step change.
+  const stepRef            = useRef(step)
+
+  useEffect(() => { stepRef.current = step }, [step])
 
   const stopPolling = useCallback(() => {
     setPolling(false)
@@ -122,6 +130,82 @@ export function ReturnRequestModal({ isOpen, onClose, request, onSuccess }) {
     }).catch(err => console.error('QR error:', err))
   }, [returnLocker, returnQrToken, step, request])
 
+  // ── Native hardware back / swipe-back gesture ──
+  // While the modal is open, the Android back gesture should:
+  //   - on step 2  → go back to step 1 (don't lose the locker/token)
+  //   - on step 1  → close the modal
+  // It must NOT pop the route or background the app.
+  useEffect(() => {
+    if (!isOpen || !Capacitor.isNativePlatform()) return
+    let listener
+    // Tell the global back handler to stand down while the modal owns "back".
+    window.__modalBackActive = true
+    App.addListener('backButton', () => {
+      if (stepRef.current === 2) {
+        setStep(1)
+      } else {
+        onClose()
+      }
+    }).then(l => { listener = l })
+    return () => {
+      window.__modalBackActive = false
+      listener?.remove()
+    }
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Native image picker (Android/iOS) ──
+  // Uses @capacitor/camera so the OS returns a lightweight webPath instead of a
+  // full-resolution base64 blob, and restores its pending call across activity
+  // recreation. This is what stops the WebView from reloading on photo pick.
+  async function pickImage() {
+    setFileError('')
+    try {
+      const photo = await Camera.getPhoto({
+        source:             CameraSource.Prompt,   // let user choose camera or gallery
+        resultType:         CameraResultType.Uri,  // webPath, NOT base64 → low memory
+        quality:            70,
+        width:              1280,                   // downscale natively before JS sees it
+        correctOrientation: true,
+        promptLabelHeader:  'Return Photo',
+        promptLabelPhoto:   'Choose from Gallery',
+        promptLabelPicture: 'Take Photo',
+        promptLabelCancel:  'Cancel',
+      })
+
+      // Turn the webPath into a real File for the Supabase upload.
+      const res  = await fetch(photo.webPath)
+      const blob = await res.blob()
+
+      if (blob.size > 15 * 1024 * 1024) {
+  setFileError('Image must be smaller than 15MB')
+  return
+}
+
+      const file = new File([blob], `return-${Date.now()}.jpg`, {
+        type: blob.type || 'image/jpeg',
+      })
+
+      setSelectedFile(file)
+      setFileReady(true)
+      setPreview(photo.webPath)   // webPath is directly usable as an <img src>
+    } catch (err) {
+      // The user tapping "cancel" rejects the promise — treat it as a no-op.
+      const msg = (err?.message || '').toLowerCase()
+      if (msg.includes('cancel')) return
+      setFileError('Could not load image. Please try again.')
+    }
+  }
+
+  // Dispatcher: native → plugin, web/desktop → hidden file input.
+  function handleUploadClick() {
+    if (Capacitor.isNativePlatform()) {
+      pickImage()
+    } else {
+      fileInputRef.current?.click()
+    }
+  }
+
+  // Web/desktop fallback (also used by drag-and-drop).
   function handleFileChange(e) {
     const file = e.target.files?.[0]
     setSelectedFile(null)
@@ -133,10 +217,10 @@ export function ReturnRequestModal({ isOpen, onClose, request, onSuccess }) {
       setFileError('Only JPEG and PNG images are allowed')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError('Image must be smaller than 5MB')
-      return
-    }
+    if (file.size > 15 * 1024 * 1024) {
+  setFileError('Image must be smaller than 15MB')
+  return
+}
     setSelectedFile(file)
     setFileReady(true)
     const reader = new FileReader()
@@ -294,7 +378,7 @@ export function ReturnRequestModal({ isOpen, onClose, request, onSuccess }) {
             onDragOver={e => { e.preventDefault(); setDragOver(true) }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleUploadClick}
             className={cn(
               'border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors',
               dragOver
@@ -309,7 +393,7 @@ export function ReturnRequestModal({ isOpen, onClose, request, onSuccess }) {
                 <svg className="w-10 h-10 text-slate-300 mx-auto" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm font-medium text-slate-600">Click to upload or drag and drop</p>
+                <p className="text-sm font-medium text-slate-600">Tap to take a photo or choose from gallery</p>
                 <p className="text-xs text-slate-400">JPEG or PNG, max 5MB</p>
               </div>
             )}

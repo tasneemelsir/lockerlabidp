@@ -107,7 +107,7 @@ function OverdueCard({ item, onSaveNote, savingNote, onResolve }) {
 }
 
 export default function ManageOverdues() {
-  const { overdues, loading, addPenaltyNote, resolvePenalty } = useManageOverdues()
+  const { overdues, loading, checking, addPenaltyNote, resolvePenalty, runOverdueCheck } = useManageOverdues()
   const [savingNote, setSavingNote] = useState(null)
   const [resolveTarget, setResolveTarget] = useState(null)
   const [resolving, setResolving] = useState(false)
@@ -139,10 +139,24 @@ export default function ManageOverdues() {
     }
   }
 
+  async function handleCheckOverdues() {
+    try {
+      await runOverdueCheck()
+      toast.success('Overdue check complete')
+    } catch (err) {
+      toast.error(err.message ?? 'Overdue check failed')
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-slate-800">Overdues &amp; Penalties</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-slate-800">Overdues &amp; Penalties</h1>
+          <Button variant="secondary" size="sm" loading={checking} onClick={handleCheckOverdues}>
+            Check Overdues Now
+          </Button>
+        </div>
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64 rounded-xl" />)}
         </div>
@@ -152,7 +166,12 @@ export default function ManageOverdues() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Overdues &amp; Penalties</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-slate-800">Overdues &amp; Penalties</h1>
+        <Button variant="secondary" size="sm" loading={checking} onClick={handleCheckOverdues}>
+          Check Overdues Now
+        </Button>
+      </div>
 
       {overdues.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 flex items-center gap-3">
