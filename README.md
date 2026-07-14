@@ -1,13 +1,16 @@
-# LabLocker — Smart Lab Component Management System
+# LabLocker — An IoT-Based Smart Lab Component Management System
 
-A full-stack web application for managing lab component borrowing in a university environment. Students can browse, request, and return lab components stored in physical smart lockers. Lab assistants manage inventory, approve requests, handle overdues, and monitor the system through a dedicated admin dashboard.
+[![Raspberry Pi](https://img.shields.io/badge/IoT%20Hub-Raspberry%20Pi-C51A4A?logo=raspberrypi&logoColor=white)](#hardware-integration)
+[![ESP32](https://img.shields.io/badge/Microcontroller-ESP32-000000?logo=espressif&logoColor=white)](#hardware-integration)
+[![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?logo=supabase&logoColor=white)](#tech-stack)
+[![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react&logoColor=black)](#tech-stack)
 
-Built as a Capstone Project at Universiti Teknologi Malaysia (UTM), Faculty of Electrical and Computer.
+An IoT project centered on a **Raspberry Pi–driven smart locker system**, paired with a full-stack web application as its management layer. The Raspberry Pi acts as the central hub, communicating with ESP32 microcontrollers, relays, and solenoid locks to physically control access to lab components — triggered in real time by approved requests from the web app.
 
 <p align="center">
   <img width="400" alt="LabLocker final prototype" src="https://github.com/user-attachments/assets/6ec04e24-6cf9-408f-b14b-03b29deb3b09" />
   <br>
-  <b>Final Prototype</b>
+  <sub><b>Final Prototype</b></sub>
 </p>
 
 ---
@@ -17,34 +20,42 @@ Built as a Capstone Project at Universiti Teknologi Malaysia (UTM), Faculty of E
 - [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [System Architecture](#system-architecture)
+- [IoT System Architecture](#iot-system-architecture)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Database Schema](#database-schema)
 - [Hardware Integration](#hardware-integration)
 - [Project Structure](#project-structure)
 - [Team](#team)
+- [License](#license)
 
 ---
 
 ## Overview
 
-LabLocker solves the problem of untracked lab component borrowing in university settings. Instead of manual logbooks and unsupervised access, the system provides:
+LabLocker is, at its core, an **IoT smart-locker system**: a Raspberry Pi hub connected to a network of ESP32 microcontrollers, relays, and solenoid locks, driven by QR-code scans and real-time events from the cloud. It solves the problem of untracked lab component borrowing in university settings by physically gating access to each locker until a request has been approved.
 
-- A digital catalog of all lab components and their locker locations
-- A structured borrow/return workflow with admin oversight
-- Automated deadline tracking with in-app and email reminders
-- QR-code-based locker access tied to approved borrow requests
-- Image proof submission for returns
-- Overdue flagging and penalty management
+Wrapped around this hardware core is a full-stack web application for managing lab component borrowing in a university environment. Students can browse, request, and return lab components stored in physical smart lockers. Lab assistants manage inventory, approve requests, handle overdues, and monitor the system through a dedicated admin dashboard.
 
-The software communicates with physical smart lockers via Supabase Realtime. A Raspberry Pi connected to ESP32 microcontrollers listens for approved requests and triggers the correct locker to open when the student's QR is scanned.
+**Key elements of the system:**
+
+- 🔧 A Raspberry Pi acting as the central IoT controller for all lockers in the lab
+- 🔌 ESP32 microcontrollers per locker, each driving a relay and solenoid lock
+- 📷 QR-code-based physical access tied to approved borrow/return requests
+- ⚡ Supabase Realtime as the bridge between the web app and the Raspberry Pi
+- 📦 A digital catalog of all lab components and their locker locations
+- ✅ A structured borrow/return workflow with admin oversight
+- ⏰ Automated deadline tracking with in-app and email reminders
+- 🖼️ Image proof submission for returns
+- 🚩 Overdue flagging and penalty management
+
+The software communicates with physical smart lockers via Supabase Realtime. The Raspberry Pi — connected to ESP32 microcontrollers — listens for approved requests and triggers the correct locker to open when the student's QR is scanned. **This Raspberry Pi–to-locker pipeline was the primary focus of the hardware/IoT work on this project.**
 
 ---
 
 ## Features
 
-### Student
+### 🎓 Student
 - Register and log in with student ID and email
 - Browse and search lab components by name and category
 - View component details including locker location and availability
@@ -59,10 +70,10 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 <p align="center">
   <img width="600" alt="Student interface — mobile app" src="https://github.com/user-attachments/assets/09d3656b-463c-413f-a792-79d3543ebbfb" />
   <br>
-  <b>Student Interface (Mobile App)</b>
+  <sub><b>Student Interface (Mobile App)</b></sub>
 </p>
 
-### Admin (Lab Assistant)
+### 🛠️ Admin (Lab Assistant)
 - Dashboard with live stats: active borrows, pending requests, overdues, flagged students
 - Full CRUD management for components and lockers
 - Approve or reject borrow requests with automatic quantity management
@@ -75,7 +86,7 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 <p align="center">
   <img width="700" alt="Admin interface — website" src="https://github.com/user-attachments/assets/0ce2292b-91a5-4772-933e-b098e609b491" />
   <br>
-  <b>Admin Interface (Website)</b>
+  <sub><b>Admin Interface (Website)</b></sub>
 </p>
 
 ---
@@ -84,12 +95,16 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 
 | Layer | Technology |
 |---|---|
+| **IoT Hub** | **Raspberry Pi (Python)** |
+| **Microcontrollers** | **ESP32** |
+| **Actuation** | **5V Relay + 12V Solenoid Lock** |
+| **Physical Access** | **QR/Barcode Scanner (TTL serial)** |
 | Frontend | React 18 + Vite |
 | Styling | Tailwind CSS v4 |
 | Routing | React Router v6 |
 | Backend / Database | Supabase (PostgreSQL) |
 | Authentication | Supabase Auth |
-| Realtime | Supabase Realtime |
+| Realtime (Pi ↔ Cloud bridge) | Supabase Realtime |
 | File Storage | Supabase Storage |
 | Forms | React Hook Form + Zod |
 | QR Generation | qrcode (npm) |
@@ -100,7 +115,7 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 
 ---
 
-## System Architecture
+## IoT System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -123,7 +138,7 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
                         │ Realtime subscription (Python)
                         ▼
 ┌─────────────────────────────────────────────────────────┐
-│                  Raspberry Pi                            │
+│            Raspberry Pi — IoT Controller (core)          │
 │         (Lab — connected to all lockers)                 │
 │                                                          │
 │   Pi ←── QR Scanner / Camera                             │
@@ -136,13 +151,13 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 <p align="center">
   <img width="700" alt="Connection schematic" src="https://github.com/user-attachments/assets/988c3088-d997-427c-ba98-8ba01c7cbbf9" />
   <br>
-  <b>Connection Schematic</b>
+  <sub><b>Connection Schematic</b></sub>
 </p>
 
 <p align="center">
   <img width="450" alt="Real hardware connection" src="https://github.com/user-attachments/assets/51586f04-a3ff-4178-9269-15a056aca5ef" />
   <br>
-  <b>Real Connection (matching the schematic above)</b>
+  <sub><b>Real Connection (matching the schematic above)</b></sub>
 </p>
 
 ### How the Frontend Connects to the Database
@@ -208,7 +223,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-public-key
 
 Both values are found in **Supabase → Project Settings → API**.
 
-> Never use the `service_role` key in the frontend. The `anon` key is safe for client-side use because RLS policies restrict what each user can access.
+> ⚠️ Never use the `service_role` key in the frontend. The `anon` key is safe for client-side use because RLS policies restrict what each user can access.
 
 ---
 
@@ -227,7 +242,7 @@ Both values are found in **Supabase → Project Settings → API**.
 <p align="center">
   <img width="700" alt="Database structure" src="https://github.com/user-attachments/assets/2769e1a7-2f30-4950-841a-0e917b8d6b09" />
   <br>
-  <b>Database Structure</b>
+  <sub><b>Database Structure</b></sub>
 </p>
 
 ### Borrow Request Status Flow
@@ -241,14 +256,14 @@ active  → overdue
 <p align="center">
   <img width="400" alt="Borrow request flow chart" src="https://github.com/user-attachments/assets/1425d5ac-65f6-4372-ae5d-b4211df000ab" />
   <br>
-  <b>Flow Chart</b>
+  <sub><b>Flow Chart</b></sub>
 </p>
 
 ---
 
 ## Hardware Integration
 
-The software exposes all necessary data through Supabase Realtime for the hardware team to integrate.
+This is the core IoT layer of LabLocker — the Raspberry Pi hub, ESP32 nodes, and physical locking mechanism that turn approved database rows into real, physical locker access.
 
 ### What the Pi Needs
 
@@ -261,7 +276,7 @@ The software exposes all necessary data through Supabase Realtime for the hardwa
 <p align="center">
   <img width="650" alt="LCD output" src="https://github.com/user-attachments/assets/35f22ea4-ff59-4ef6-a687-a1de04654db7" />
   <br>
-  <b>LCD Output</b>
+  <sub><b>LCD Output</b></sub>
 </p>
 
 ### QR Code Contents
@@ -371,6 +386,8 @@ Architecture follows **Features-First** — each feature is self-contained with 
 
 Tasneem ELsir Hussain Abdelrahman
 
+---
+
 ## License
 
-This project was developed as project for Integrated Design Project (IDP) at UTM. All rights reserved.
+This project was developed as part of the Integrated Design Project (IDP) at Universiti Teknologi Malaysia (UTM), Faculty of Electrical and Computer. All rights reserved.
