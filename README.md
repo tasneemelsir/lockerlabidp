@@ -101,6 +101,38 @@ The software communicates with physical smart lockers via Supabase Realtime. A R
 ---
 
 ## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    React Frontend                        │
+│         (Student Dashboard + Admin Dashboard)            │
+└───────────────────────┬─────────────────────────────────┘
+                        │ HTTPS (REST + Realtime WebSocket)
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                      Supabase                            │
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐    │
+│  │   Auth   │  │PostgREST │  │Realtime  │  │Storage │    │
+│  │  Server  │  │   API    │  │ Server   │  │Bucket  │    │
+│  └──────────┘  └──────────┘  └──────────┘  └────────┘    │
+│                        │                                 │
+│                        ▼                                 │
+│                  PostgreSQL DB                           │
+└───────────────────────┬─────────────────────────────────┘
+                        │ Realtime subscription (Python)
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                  Raspberry Pi                            │
+│         (Lab — connected to all lockers)                 │
+│                                                          │
+│   Pi ←── QR Scanner / Camera                             │
+│   Pi ←→── ESP32 #1 ──→ Relay ──→ Locker A1                │
+│   Pi ←→── ESP32 #2 ──→ Relay ──→ Locker A2                │
+│   Pi ←→── ESP32 #3 ──→ Relay ──→ Locker B1                │
+└─────────────────────────────────────────────────────────┘
+```
+
 <p align="center">
   <img width="700" alt="Connection schematic" src="https://github.com/user-attachments/assets/988c3088-d997-427c-ba98-8ba01c7cbbf9" />
   <br>
@@ -168,6 +200,12 @@ The app will be available at `http://localhost:5173`.
 ## Environment Variables
 
 Create a `.env` file in the project root:
+
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
+```
+
 Both values are found in **Supabase → Project Settings → API**.
 
 > Never use the `service_role` key in the frontend. The `anon` key is safe for client-side use because RLS policies restrict what each user can access.
@@ -193,6 +231,13 @@ Both values are found in **Supabase → Project Settings → API**.
 </p>
 
 ### Borrow Request Status Flow
+
+```
+pending → active → return_requested → returned
+       ↘ rejected
+active  → overdue
+```
+
 <p align="center">
   <img width="400" alt="Borrow request flow chart" src="https://github.com/user-attachments/assets/1425d5ac-65f6-4372-ae5d-b4211df000ab" />
   <br>
@@ -286,6 +331,38 @@ def verify_return_qr(qr_data):
 ---
 
 ## Project Structure
+
+```
+src/
+├── app/
+│   ├── App.jsx               # Root component, providers
+│   ├── Router.jsx            # All route definitions
+│   └── main.jsx              # Entry point
+│
+├── features/
+│   ├── auth/                 # Login, Register
+│   ├── components/           # Browse lab components
+│   ├── borrows/              # Borrow requests, return flow, QR modals
+│   ├── notifications/        # In-app notification center
+│   ├── item-requests/        # Request new items
+│   ├── student/               # Student dashboard, profile, active loans
+│   └── admin/                # All admin pages and hooks
+│
+└── shared/
+    ├── components/
+    │   ├── ui/               # Button, Card, Badge, Modal, Table, Input...
+    │   └── layout/           # StudentLayout, AdminLayout, ProtectedRoute
+    ├── context/
+    │   └── AuthContext.jsx   # Global auth state
+    ├── hooks/
+    │   └── useSupabase.js
+    ├── lib/
+    │   └── supabase.js       # Supabase client
+    └── utils/
+        ├── dates.js          # Date helpers
+        └── cn.js             # Tailwind class merge
+```
+
 Architecture follows **Features-First** — each feature is self-contained with its own components, hooks, and pages. Shared utilities live in `shared/`.
 
 ---
