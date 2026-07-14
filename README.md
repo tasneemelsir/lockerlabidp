@@ -4,6 +4,7 @@
 [![ESP32](https://img.shields.io/badge/Microcontroller-ESP32-000000?logo=espressif&logoColor=white)](#hardware-integration)
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?logo=supabase&logoColor=white)](#tech-stack)
 [![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react&logoColor=black)](#tech-stack)
+[![Demo Video](https://img.shields.io/badge/▶-Watch%20Demo%20Video-red?logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1pE1uAjqOts6Oi9PLFd9QPftqEwt7yLV5/view?usp=sharing)
 
 An IoT project centered on a **Raspberry Pi–driven smart locker system**, paired with a full-stack web application as its management layer. The Raspberry Pi acts as the central hub, communicating with ESP32 microcontrollers, relays, and solenoid locks to physically control access to lab components — triggered in real time by approved requests from the web app.
 
@@ -13,11 +14,18 @@ An IoT project centered on a **Raspberry Pi–driven smart locker system**, pair
   <sub><b>Final Prototype</b></sub>
 </p>
 
+<p align="center">
+  <a href="https://drive.google.com/file/d/1pE1uAjqOts6Oi9PLFd9QPftqEwt7yLV5/view?usp=sharing">
+    <img src="https://img.shields.io/badge/▶-Watch%20the%20Demo%20Video-red?style=for-the-badge&logo=googledrive&logoColor=white" alt="Watch the demo video" />
+  </a>
+</p>
+
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Demo Video](#demo-video)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [IoT System Architecture](#iot-system-architecture)
@@ -50,6 +58,14 @@ Wrapped around this hardware core is a full-stack web application for managing l
 - 🚩 Overdue flagging and penalty management
 
 The software communicates with physical smart lockers via Supabase Realtime. The Raspberry Pi — connected to ESP32 microcontrollers — listens for approved requests and triggers the correct locker to open when the student's QR is scanned. **This Raspberry Pi–to-locker pipeline was the primary focus of the hardware/IoT work on this project.**
+
+---
+
+## Demo Video
+
+A full walkthrough of the system in action — student borrow/return flow, the admin dashboard, and the Raspberry Pi physically unlocking a locker after a QR scan.
+
+📽️ **[Watch the demo video](https://drive.google.com/file/d/1pE1uAjqOts6Oi9PLFd9QPftqEwt7yLV5/view?usp=sharing)**
 
 ---
 
